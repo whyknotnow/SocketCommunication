@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.UnknownHostException;
 
 public class DoCommunication implements Runnable {
     
@@ -16,9 +17,8 @@ public class DoCommunication implements Runnable {
     }
 
     @SuppressWarnings("deprecation")
-	public void run() {
+	public void run(){
     	input="";
-
     	try {
         // Get input from the client
     		DataInputStream in = new DataInputStream (server.getInputStream());
@@ -32,17 +32,27 @@ public class DoCommunication implements Runnable {
     	//get address value
     		input=in.readLine();    		
 
-    		InetAddress hostAddr = InetAddress.getByName(input);
-    		String IPaddr = hostAddr.getHostAddress();
+    		String address = resolveAddress(input);
         
         // Now write to the client
-    		System.out.println("IP address is:" + IPaddr);
-    		out.println("IP address is:" + IPaddr);
+    		System.out.println(address);
+    		out.println(address);
 
     		server.close();
-    	} catch (IOException ioe) {
-    		System.out.println("IOException on socket listen: " + ioe);
-    		ioe.printStackTrace();
+    	} catch ( IOException ioe) {
+    		System.out.println("IOException : Unable to resolve host" + ioe);    		
     	}
+    }
+    
+    private String resolveAddress(String input) throws UnknownHostException{
+    	String IPaddr = null;
+    	InetAddress hostAddr = null;
+    	try {
+			hostAddr = InetAddress.getByName(input);
+		} catch (java.net.UnknownHostException e) {
+			return "Unable the resolve host";			
+		}
+		IPaddr = hostAddr.getHostAddress();
+		return IPaddr;    	
     }
 }
